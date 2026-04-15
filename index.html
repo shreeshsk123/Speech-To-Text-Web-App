@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Voice to Text Web</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="background-glow"></div>
+    <div class="container">
+        <header class="header">
+            <h1>Transcribe Audio</h1>
+            <p class="subtitle">Upload or record audio to instantly get accurate text transcriptions using advanced AI.</p>
+        </header>
+
+        <div class="card">
+            <div class="tabs">
+                <div class="tab active" id="tabUpload">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                    Upload Audio
+                </div>
+                <div class="tab" id="tabRecord">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                    Record Audio
+                </div>
+            </div>
+
+            <!-- Upload View -->
+            <div id="uploadView" class="upload-area">
+                <div class="icons-stack">
+                    <div class="icon-card back-left">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div class="icon-card back-right">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    </div>
+                    <div class="icon-card main-center">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                    </div>
+                </div>
+                <h3 class="upload-title">Choose audio file</h3>
+                <p class="upload-subtitle">WAV, MP3, M4A, OGG, FLAC, WEBM, MP4 supported</p>
+                
+                <input type="file" id="audioInput" accept="audio/*,video/mp4" class="hidden">
+                <button id="browseBtn" class="btn btn-primary">Browse Files</button>
+            </div>
+
+            <!-- Record View -->
+            <div id="recordView" class="upload-area hidden">
+                <div class="icons-stack">
+                    <div class="icon-card main-center" style="border-color: #f43f5e; box-shadow: 0 4px 14px rgba(244, 63, 94, 0.2);">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+                    </div>
+                </div>
+                <h3 class="upload-title">Record your voice</h3>
+                <p class="upload-subtitle">Click to start recording clearly</p>
+                
+                <button id="recordBtn" class="btn btn-record">Start Recording</button>
+            </div>
+
+            <div id="audioPreviewContainer" class="hidden">
+                <span class="file-name" id="fileName">No file</span>
+                <audio id="audioPreview" controls></audio>
+                <div class="action-buttons">
+                    <button id="transcribeBtn" class="btn btn-success">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        Transcribe Audio
+                    </button>
+                </div>
+            </div>
+
+            <div id="statusMessage" class="status-message hidden"></div>
+
+            <div id="transcriptionResult" class="transcription-result hidden">
+                <h4>Transcription Result:</h4>
+                <div class="result-box">
+                    <p id="resultText"></p>
+                </div>
+            </div>
+        </div>
+
+        <div class="features">
+            <div class="feature-item">
+                <div class="stars">★★★★★</div>
+                <p>Highly Accurate AI</p>
+            </div>
+            <div class="feature-item">
+                <div class="icon-small">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                </div>
+                <p>Contextual Understanding</p>
+            </div>
+            <div class="feature-item">
+                <div class="flags">
+                    <span class="flag">⚡</span>
+                </div>
+                <p>Lightning Fast</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const tabUpload = document.getElementById('tabUpload');
+        const tabRecord = document.getElementById('tabRecord');
+        const uploadView = document.getElementById('uploadView');
+        const recordView = document.getElementById('recordView');
+        const audioInput = document.getElementById('audioInput');
+        const browseBtn = document.getElementById('browseBtn');
+        const audioPreviewContainer = document.getElementById('audioPreviewContainer');
+        const fileName = document.getElementById('fileName');
+        const audioPreview = document.getElementById('audioPreview');
+        const transcribeBtn = document.getElementById('transcribeBtn');
+        const statusMessage = document.getElementById('statusMessage');
+        const transcriptionResult = document.getElementById('transcriptionResult');
+        const resultText = document.getElementById('resultText');
+        const recordBtn = document.getElementById('recordBtn');
+
+        let currentFile = null;
+        let originalFileName = "";
+        let mediaRecorder;
+        let audioChunks = [];
+        let isRecording = false;
+
+        // Tabs
+        tabUpload.addEventListener('click', () => {
+            tabUpload.classList.add('active');
+            tabRecord.classList.remove('active');
+            uploadView.classList.remove('hidden');
+            recordView.classList.add('hidden');
+            resetState();
+        });
+
+        tabRecord.addEventListener('click', () => {
+            tabRecord.classList.add('active');
+            tabUpload.classList.remove('active');
+            recordView.classList.remove('hidden');
+            uploadView.classList.add('hidden');
+            resetState();
+        });
+
+        // Browse Files
+        browseBtn.addEventListener('click', () => audioInput.click());
+        audioInput.addEventListener('change', (e) => {
+            if(e.target.files.length > 0) {
+                currentFile = e.target.files[0];
+                originalFileName = currentFile.name;
+                setupPreview(URL.createObjectURL(currentFile), originalFileName);
+            }
+        });
+
+        // Record Audio
+        recordBtn.addEventListener('click', async () => {
+            if(!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    audioChunks = [];
+                    mediaRecorder.start();
+                    isRecording = true;
+                    recordBtn.innerHTML = 'Cancel / Stop Recording';
+                    recordBtn.classList.add('recording');
+                    resetContent();
+                    
+                    mediaRecorder.addEventListener("dataavailable", event => {
+                        audioChunks.push(event.data);
+                    });
+
+                    mediaRecorder.addEventListener("stop", () => {
+                        if (audioChunks.length > 0) {
+                            const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                            currentFile = new File([audioBlob], "recording.webm", { type: 'audio/webm' });
+                            originalFileName = "recording.webm";
+                            setupPreview(URL.createObjectURL(currentFile), "Voice Recording Session");
+                        }
+                        stream.getTracks().forEach(track => track.stop());
+                    });
+                } catch(err) {
+                    showError("Microphone access denied or not available. Please ensure you are running this over an accessible URL that allows permissions.");
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.innerHTML = 'Start Recording';
+                recordBtn.classList.remove('recording');
+            }
+        });
+
+        function setupPreview(url, name) {
+            fileName.textContent = name;
+            audioPreview.src = url;
+            audioPreviewContainer.classList.remove('hidden');
+            transcriptionResult.classList.add('hidden');
+            statusMessage.classList.add('hidden');
+        }
+
+        function resetState() {
+            currentFile = null;
+            audioInput.value = '';
+            audioPreviewContainer.classList.add('hidden');
+            if(isRecording && mediaRecorder) {
+                mediaRecorder.stop();
+                isRecording = false;
+                recordBtn.innerHTML = 'Start Recording';
+                recordBtn.classList.remove('recording');
+            }
+            resetContent();
+        }
+
+        function resetContent() {
+            transcriptionResult.classList.add('hidden');
+            statusMessage.classList.add('hidden');
+            audioPreview.pause();
+        }
+
+        function showLoading() {
+            statusMessage.innerHTML = '<div class="spinner"></div> Processing with VibeVoice-ASR model...';
+            statusMessage.className = 'status-message';
+            transcriptionResult.classList.add('hidden');
+            transcribeBtn.disabled = true;
+            transcribeBtn.style.opacity = '0.7';
+        }
+
+        function showError(msg) {
+            statusMessage.innerHTML = typeof msg === 'string' ? msg : 'An error occurred';
+            statusMessage.className = 'status-message error';
+            transcriptionResult.classList.add('hidden');
+            transcribeBtn.disabled = false;
+            transcribeBtn.style.opacity = '1';
+        }
+
+        function showSuccess(text) {
+            statusMessage.classList.add('hidden');
+            resultText.textContent = text;
+            transcriptionResult.classList.remove('hidden');
+            transcribeBtn.disabled = false;
+            transcribeBtn.style.opacity = '1';
+        }
+
+        // Transcribe logic
+        transcribeBtn.addEventListener('click', async () => {
+            if(!currentFile) return;
+            showLoading();
+
+            const formData = new FormData();
+            formData.append("audio_file", currentFile, originalFileName);
+
+            try {
+                // If the app is served via the same proxy/backend, relative /transcribe works.
+                // Otherwise use localhost:8000
+                const response = await fetch("/transcribe", {
+                    method: "POST",
+                    body: formData
+                });
+
+                if(!response.ok) {
+                    const err = await response.json().catch(()=>({}));
+                    throw new Error(err.detail || "Transcription API failed! Status code: " + response.status);
+                }
+
+                const data = await response.json();
+                showSuccess(data.text || "(No text identified in audio)");
+            } catch(error) {
+                showError("Error: " + error.message);
+            }
+        });
+    </script>
+</body>
+</html>
