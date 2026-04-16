@@ -5,17 +5,163 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Voice to Text Web</title>
     <link rel="stylesheet" href="style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;900&family=Outfit:wght@400;600;800&display=swap" rel="stylesheet">
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore-compat.js"></script>
+    <script src="firebase-config.js?v=2"></script>
 </head>
 <body>
-    <div class="background-glow"></div>
+    <div class="background-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+    
+    <!-- Top Nav -->
+    <nav class="auth-nav">
+        <div id="loggedOutNav">
+            <button class="nav-btn" onclick="openModal('loginModal')">Login</button>
+            <button class="nav-btn primary" onclick="openModal('signupModal')">Sign Up</button>
+        </div>
+        <div id="loggedInNav" class="hidden">
+            <button class="nav-btn" onclick="openHistoryModal()">History</button>
+            <button class="nav-btn" onclick="openModal('profileModal')">Profile</button>
+        </div>
+    </nav>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3>Login</h3>
+                <button class="modal-close" onclick="closeModal('loginModal')">&times;</button>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" required>
+                </div>
+                <button type="submit" class="btn btn-primary glow-blue modal-btn">Login</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Sign Up Modal -->
+    <div id="signupModal" class="modal-overlay">
+        <div class="modal-content premium-modal">
+            <button class="modal-close premium-close" onclick="closeModal('signupModal')">&times;</button>
+            <div class="premium-header">
+                <h3>Create Your Account</h3>
+                <p>Join us and start transcribing in seconds.</p>
+            </div>
+            
+            <button id="githubLoginBtn" class="btn btn-github">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.374 0 0 5.373 0 12c0 5.302 3.438 9.8 8.205 11.385.6.113.82-.258.82-.577 0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729 1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305 3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93 0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176 0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405 1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23.645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22 0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22 0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57C20.565 21.795 24 17.298 24 12c0-6.627-5.373-12-12-12"/>
+                </svg>
+                Continue with GitHub
+            </button>
+            
+            <div class="divider">
+                <span>OR</span>
+            </div>
+
+            <form id="signupForm" class="premium-form">
+                <div class="form-group premium-input-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signupName" required placeholder="Jane Doe">
+                </div>
+                
+                <div class="form-group premium-input-group">
+                    <label>Username <span class="optional-text">(optional)</span></label>
+                    <input type="text" id="signupUsername" placeholder="@janedoe">
+                </div>
+
+                <div class="form-group premium-input-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" required placeholder="jane@example.com">
+                    <span class="validation-msg" id="emailError"></span>
+                </div>
+                
+                <div class="form-group premium-input-group">
+                    <label>Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="signupPassword" required minlength="6" placeholder="••••••••">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('signupPassword', this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                    <div class="password-strength" id="pwdStrength">
+                        <div class="strength-bar" id="pwdStrengthBar"></div>
+                        <span class="strength-text" id="pwdStrengthText"></span>
+                    </div>
+                </div>
+
+                <div class="form-group premium-input-group">
+                    <label>Confirm Password</label>
+                    <div class="password-wrapper">
+                        <input type="password" id="signupConfirmPassword" required minlength="6" placeholder="••••••••">
+                        <button type="button" class="toggle-password" onclick="togglePasswordVisibility('signupConfirmPassword', this)">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                        </button>
+                    </div>
+                    <span class="validation-msg" id="pwdMatchError"></span>
+                </div>
+
+                <button type="submit" id="signupSubmitBtn" class="btn btn-premium-gradient">
+                    <span class="btn-text">Create Your Account</span>
+                    <div class="spinner"></div>
+                </button>
+                
+                <div class="trust-elements">
+                    <p>🔒 Secure & encrypted</p>
+                    <p>🛡️ We never share your data</p>
+                </div>
+            </form>
+            
+            <div class="modal-footer">
+                <p>Already have an account? <a href="#" onclick="openModal('loginModal'); closeModal('signupModal'); return false;">Login</a></p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div id="profileModal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3>My Profile</h3>
+                <button class="modal-close" onclick="closeModal('profileModal')">&times;</button>
+            </div>
+            <div class="profile-email" id="profileEmail"></div>
+            <button id="logoutBtn" class="btn btn-record glow-red modal-btn">Logout</button>
+        </div>
+    </div>
+
+    <!-- History Modal -->
+    <div id="historyModal" class="modal-overlay">
+        <div class="modal-content glass-panel">
+            <div class="modal-header">
+                <h3>Transcription History</h3>
+                <button class="modal-close" onclick="closeModal('historyModal')">&times;</button>
+            </div>
+            <div id="historyList" class="history-list">
+                <!-- Javascript will populate this -->
+            </div>
+        </div>
+    </div>
+
     <div class="container">
         <header class="header">
-            <h1>Transcribe Audio</h1>
+            <h1 class="gradient-text">Transcribe Audio</h1>
             <p class="subtitle">Upload or record audio to instantly get accurate text transcriptions using advanced AI.</p>
         </header>
 
-        <div class="card">
+        <div class="card glass-panel">
             <div class="tabs">
                 <div class="tab active" id="tabUpload">
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
@@ -30,41 +176,41 @@
             <!-- Upload View -->
             <div id="uploadView" class="upload-area">
                 <div class="icons-stack">
-                    <div class="icon-card back-left">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <div class="icon-card back-left glass-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     </div>
-                    <div class="icon-card back-right">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+                    <div class="icon-card back-right glass-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
                     </div>
-                    <div class="icon-card main-center">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+                    <div class="icon-card main-center solid-icon-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
                     </div>
                 </div>
                 <h3 class="upload-title">Choose audio file</h3>
                 <p class="upload-subtitle">WAV, MP3, M4A, OGG, FLAC, WEBM, MP4 supported</p>
                 
                 <input type="file" id="audioInput" accept="audio/*,video/mp4" class="hidden">
-                <button id="browseBtn" class="btn btn-primary">Browse Files</button>
+                <button id="browseBtn" class="btn btn-primary glow-blue">Browse Files</button>
             </div>
 
             <!-- Record View -->
             <div id="recordView" class="upload-area hidden">
                 <div class="icons-stack">
-                    <div class="icon-card main-center" style="border-color: #f43f5e; box-shadow: 0 4px 14px rgba(244, 63, 94, 0.2);">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="#f43f5e" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
+                    <div class="icon-card main-center solid-icon-red glow-red-shadow">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v4M8 23h8"/></svg>
                     </div>
                 </div>
                 <h3 class="upload-title">Record your voice</h3>
                 <p class="upload-subtitle">Click to start recording clearly</p>
                 
-                <button id="recordBtn" class="btn btn-record">Start Recording</button>
+                <button id="recordBtn" class="btn btn-record glow-red">Start Recording</button>
             </div>
 
-            <div id="audioPreviewContainer" class="hidden">
+            <div id="audioPreviewContainer" class="hidden glass-panel-inner">
                 <span class="file-name" id="fileName">No file</span>
                 <audio id="audioPreview" controls></audio>
                 <div class="action-buttons">
-                    <button id="transcribeBtn" class="btn btn-success">
+                    <button id="transcribeBtn" class="btn btn-success glow-green">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
                         Transcribe Audio
                     </button>
@@ -74,25 +220,28 @@
             <div id="statusMessage" class="status-message hidden"></div>
 
             <div id="transcriptionResult" class="transcription-result hidden">
-                <h4>Transcription Result:</h4>
-                <div class="result-box">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                    <h4 class="gradient-text-small" style="margin-bottom: 0;">Transcription Result</h4>
+                    <button id="copyBtn" class="copy-btn">📋 Copy</button>
+                </div>
+                <div class="result-box glass-panel-inner">
                     <p id="resultText"></p>
                 </div>
             </div>
         </div>
 
         <div class="features">
-            <div class="feature-item">
+            <div class="feature-item glass-pill">
                 <div class="stars">★★★★★</div>
                 <p>Highly Accurate AI</p>
             </div>
-            <div class="feature-item">
+            <div class="feature-item glass-pill">
                 <div class="icon-small">
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
                 </div>
                 <p>Contextual Understanding</p>
             </div>
-            <div class="feature-item">
+            <div class="feature-item glass-pill">
                 <div class="flags">
                     <span class="flag">⚡</span>
                 </div>
@@ -122,6 +271,178 @@
         let mediaRecorder;
         let audioChunks = [];
         let isRecording = false;
+
+        // Global Modal Logic
+        window.openModal = (id) => document.getElementById(id).classList.add('active');
+        window.closeModal = (id) => document.getElementById(id).classList.remove('active');
+
+        // Auth Navigation State Checking
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                if(window.onAuthStateChanged && window.firebaseAuth) {
+                    window.onAuthStateChanged(window.firebaseAuth, (user) => {
+                        const loggedOutNav = document.getElementById('loggedOutNav');
+                        const loggedInNav = document.getElementById('loggedInNav');
+                        if(user) {
+                            loggedOutNav.classList.add('hidden');
+                            loggedInNav.classList.remove('hidden');
+                            document.getElementById('profileEmail').textContent = user.email;
+                        } else {
+                            loggedOutNav.classList.remove('hidden');
+                            loggedInNav.classList.add('hidden');
+                        }
+                    });
+                }
+            }, 800);
+        });
+
+        // Auth Logic Calls
+        // Setup Password Visibility Toggle
+        window.togglePasswordVisibility = (inputId, btn) => {
+            const input = document.getElementById(inputId);
+            if(input.type === 'password') {
+                input.type = 'text';
+                btn.style.opacity = '1';
+                btn.querySelector('circle').style.fill = 'currentColor'; // crude visual queue for solid eye
+            } else {
+                input.type = 'password';
+                btn.style.opacity = '0.7';
+                btn.querySelector('circle').style.fill = 'none';
+            }
+        };
+
+        // Realtime Validation Logic
+        const signupEmail = document.getElementById('signupEmail');
+        const emailError = document.getElementById('emailError');
+        const signupPassword = document.getElementById('signupPassword');
+        const signupConfirmPassword = document.getElementById('signupConfirmPassword');
+        const pwdMatchError = document.getElementById('pwdMatchError');
+        const pwdStrengthBar = document.getElementById('pwdStrengthBar');
+        const pwdStrengthText = document.getElementById('pwdStrengthText');
+
+        signupEmail.addEventListener('input', () => {
+            const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if(!re.test(signupEmail.value) && signupEmail.value.length > 0) {
+                emailError.textContent = "Please enter a valid email address";
+            } else {
+                emailError.textContent = "";
+            }
+        });
+
+        signupPassword.addEventListener('input', () => {
+            const val = signupPassword.value;
+            pwdStrengthBar.parentElement.className = 'password-strength';
+            if(val.length === 0) {
+                pwdStrengthText.textContent = "";
+                pwdStrengthText.className = "strength-text";
+            } else if(val.length < 6) {
+                pwdStrengthBar.parentElement.classList.add('strength-weak');
+                pwdStrengthText.textContent = "Weak";
+                pwdStrengthText.className = "strength-text text-weak";
+            } else if(val.length < 10 || !/[A-Z]/.test(val) || !/[0-9]/.test(val)) {
+                pwdStrengthBar.parentElement.classList.add('strength-medium');
+                pwdStrengthText.textContent = "Medium";
+                pwdStrengthText.className = "strength-text text-medium";
+            } else {
+                pwdStrengthBar.parentElement.classList.add('strength-strong');
+                pwdStrengthText.textContent = "Strong";
+                pwdStrengthText.className = "strength-text text-strong";
+            }
+            validatePasswords();
+        });
+
+        signupConfirmPassword.addEventListener('input', validatePasswords);
+
+        function validatePasswords() {
+            if(signupConfirmPassword.value !== signupPassword.value && signupConfirmPassword.value.length > 0) {
+                pwdMatchError.textContent = "Passwords do not match";
+                return false;
+            } else {
+                pwdMatchError.textContent = "";
+                return true;
+            }
+        }
+
+        // GitHub Login Logic
+        const githubLoginBtn = document.getElementById('githubLoginBtn');
+        if (githubLoginBtn) {
+            githubLoginBtn.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const originalText = githubLoginBtn.innerHTML;
+                githubLoginBtn.innerHTML = '<div class="spinner" style="display:inline-block; margin:0;"></div> <span style="margin-left: 8px;">Connecting...</span>';
+                githubLoginBtn.style.pointerEvents = 'none';
+                try {
+                    await window.loginWithGithub();
+                    closeModal('signupModal');
+                } catch(err) {
+                    alert('GitHub Login Error: ' + err.message);
+                    githubLoginBtn.innerHTML = originalText;
+                } finally {
+                    githubLoginBtn.style.pointerEvents = 'auto';
+                }
+            });
+        }
+
+        // Updated Auth Logic Calls
+        document.getElementById('signupForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = document.getElementById('signupSubmitBtn');
+            const email = signupEmail.value;
+            const password = signupPassword.value;
+            
+            // Validate before submit
+            if(emailError.textContent || !validatePasswords()) {
+                pwdMatchError.textContent = pwdMatchError.textContent || "Please resolve errors before submitting";
+                return;
+            }
+            
+            btn.classList.add('loading');
+            try {
+                await window.signUpUser(email, password);
+                closeModal('signupModal');
+                e.target.reset();
+                pwdStrengthBar.parentElement.className = 'password-strength';
+                pwdStrengthText.textContent = "";
+            } catch(err) { 
+                pwdMatchError.textContent = "Error: " + err.message; 
+            }
+            btn.classList.remove('loading');
+        });
+
+        document.getElementById('loginForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const btn = e.target.querySelector('button');
+            btn.textContent = "Loading...";
+            try {
+                await window.loginUser(document.getElementById('loginEmail').value, document.getElementById('loginPassword').value);
+                closeModal('loginModal');
+            } catch(err) { alert("Error: " + err.message); }
+            btn.textContent = "Login";
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', async () => {
+            await window.logoutUser();
+            closeModal('profileModal');
+        });
+
+        window.openHistoryModal = async () => {
+            openModal('historyModal');
+            const container = document.getElementById('historyList');
+            container.innerHTML = '<div style="text-align:center;"><div class="spinner"></div></div>';
+            try {
+                const records = await window.getTranscriptionHistory();
+                if(records.length === 0) {
+                    container.innerHTML = '<p class="status-message">No history found.</p>';
+                    return;
+                }
+                container.innerHTML = records.map(r => `
+                    <div class="history-item glass-panel-inner">
+                        <div class="history-header"><strong>${r.audioName}</strong><span class="history-date">${new Date(r.timestamp).toLocaleString()}</span></div>
+                        <p class="history-text">${r.transcript}</p>
+                    </div>
+                `).join('');
+            } catch(err) { container.innerHTML = '<p class="status-message error">Failed to load history.</p>'; }
+        };
 
         // Tabs
         tabUpload.addEventListener('click', () => {
@@ -172,12 +493,12 @@
                             const audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
                             currentFile = new File([audioBlob], "recording.webm", { type: 'audio/webm' });
                             originalFileName = "recording.webm";
-                            setupPreview(URL.createObjectURL(currentFile), "Voice Recording Session");
+                            setupPreview(URL.createObjectURL(currentFile), "Voice Recording Context");
                         }
                         stream.getTracks().forEach(track => track.stop());
                     });
                 } catch(err) {
-                    showError("Microphone access denied or not available. Please ensure you are running this over an accessible URL that allows permissions.");
+                    showError("Microphone access denied.");
                 }
             } else {
                 mediaRecorder.stop();
@@ -211,12 +532,13 @@
         function resetContent() {
             transcriptionResult.classList.add('hidden');
             statusMessage.classList.add('hidden');
-            audioPreview.pause();
+            if(!audioPreview.paused) audioPreview.pause();
         }
 
         function showLoading() {
-            statusMessage.innerHTML = '<div class="spinner"></div> Processing with VibeVoice-ASR model...';
+            statusMessage.innerHTML = '<div class="spinner"></div> Processing model...';
             statusMessage.className = 'status-message';
+            statusMessage.classList.remove('hidden');
             transcriptionResult.classList.add('hidden');
             transcribeBtn.disabled = true;
             transcribeBtn.style.opacity = '0.7';
@@ -225,6 +547,7 @@
         function showError(msg) {
             statusMessage.innerHTML = typeof msg === 'string' ? msg : 'An error occurred';
             statusMessage.className = 'status-message error';
+            statusMessage.classList.remove('hidden');
             transcriptionResult.classList.add('hidden');
             transcribeBtn.disabled = false;
             transcribeBtn.style.opacity = '1';
@@ -238,6 +561,14 @@
             transcribeBtn.style.opacity = '1';
         }
 
+        document.getElementById('copyBtn').addEventListener('click', () => {
+            navigator.clipboard.writeText(resultText.textContent).then(() => {
+                const copyBtn = document.getElementById('copyBtn');
+                copyBtn.textContent = "Copied!";
+                setTimeout(() => { copyBtn.textContent = "📋 Copy"; }, 2000);
+            });
+        });
+
         // Transcribe logic
         transcribeBtn.addEventListener('click', async () => {
             if(!currentFile) return;
@@ -247,9 +578,7 @@
             formData.append("audio_file", currentFile, originalFileName);
 
             try {
-                // If the app is served via the same proxy/backend, relative /transcribe works.
-                // Otherwise use localhost:8000
-                const response = await fetch("/transcribe", {
+                const response = await fetch("http://localhost:8000/transcribe", {
                     method: "POST",
                     body: formData
                 });
@@ -260,7 +589,21 @@
                 }
 
                 const data = await response.json();
-                showSuccess(data.text || "(No text identified in audio)");
+                const transText = data.text || "(No text identified in audio)";
+                showSuccess(transText);
+
+                // FIREBASE DATABASE HOOK
+                if(window.firebaseAuth && window.firebaseAuth.currentUser) {
+                    try {
+                        await window.saveTranscriptionHistory(originalFileName, transText);
+                        statusMessage.innerHTML = 'Saved to history!';
+                        statusMessage.className = 'status-message success';
+                        statusMessage.classList.remove('hidden');
+                        setTimeout(() => statusMessage.classList.add('hidden'), 4000);
+                    } catch(e) {
+                        console.error("Failed to save history doc:", e);
+                    }
+                }
             } catch(error) {
                 showError("Error: " + error.message);
             }

@@ -19,14 +19,15 @@ app = FastAPI(title="Voice to Text API")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
-    allow_credentials=True,
+    allow_credentials=False, # Must be False if origins=["*"] to prevent CORS errors
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 print("Loading Speech-to-Text model...")
 try:
-    asr = pipeline("automatic-speech-recognition", model="microsoft/VibeVoice-ASR-HF")
+    # Use standard Whisper model which handles resampling natively and is highly accurate
+    asr = pipeline("automatic-speech-recognition", model="openai/whisper-tiny")
     print("Model loaded successfully!")
 except Exception as e:
     print(f"Warning/Error loading specific model: {e}")
