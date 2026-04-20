@@ -171,6 +171,10 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
                     Record Audio
                 </div>
+                <div class="tab" id="tabPdf">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    Upload PDF
+                </div>
             </div>
 
             <!-- Upload View -->
@@ -206,13 +210,27 @@
                 <button id="recordBtn" class="btn btn-record glow-red">Start Recording</button>
             </div>
 
+            <!-- PDF Upload View -->
+            <div id="pdfView" class="upload-area hidden">
+                <div class="icons-stack">
+                    <div class="icon-card main-center solid-icon-blue">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+                    </div>
+                </div>
+                <h3 class="upload-title">Choose PDF file</h3>
+                <p class="upload-subtitle">Standard PDF documents supported for extraction</p>
+                
+                <input type="file" id="pdfInput" accept=".pdf" class="hidden">
+                <button id="browsePdfBtn" class="btn btn-primary glow-blue">Browse Files</button>
+            </div>
+
             <div id="audioPreviewContainer" class="hidden glass-panel-inner">
                 <span class="file-name" id="fileName">No file</span>
                 <audio id="audioPreview" controls></audio>
                 <div class="action-buttons">
                     <button id="transcribeBtn" class="btn btn-success glow-green">
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
-                        Transcribe Audio
+                        Process File
                     </button>
                 </div>
             </div>
@@ -221,9 +239,19 @@
 
             <div id="transcriptionResult" class="transcription-result hidden">
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                    <h4 class="gradient-text-small" style="margin-bottom: 0;">Transcription Result</h4>
+                    <h4 class="gradient-text-small" style="margin-bottom: 0;">Processed Results</h4>
                     <button id="copyBtn" class="copy-btn">📋 Copy</button>
                 </div>
+
+                <!-- Insights Block for Summaries and Keywords -->
+                <div id="insightsPanel" class="hidden" style="margin-bottom:15px; padding:15px; background: rgba(var(--primary-color-rgb), 0.05); border: 1px solid rgba(var(--primary-color-rgb), 0.2); border-radius: 12px;">
+                    <h5 style="margin:0 0 6px 0; color:var(--text-secondary); font-size: 0.9rem;">✨ AI Summary</h5>
+                    <p id="summaryText" style="font-size: 0.95rem; line-height: 1.5; color:var(--text-primary); margin-bottom: 12px; font-weight: 500;"></p>
+                    
+                    <h5 style="margin:0 0 6px 0; color:var(--text-secondary); font-size: 0.9rem;">🔑 Key Topics</h5>
+                    <div id="keywordsContainer" style="display: flex; flex-wrap: wrap; gap: 8px;"></div>
+                </div>
+
                 <div class="result-box glass-panel-inner">
                     <p id="resultText"></p>
                 </div>
@@ -253,10 +281,14 @@
     <script>
         const tabUpload = document.getElementById('tabUpload');
         const tabRecord = document.getElementById('tabRecord');
+        const tabPdf = document.getElementById('tabPdf');
         const uploadView = document.getElementById('uploadView');
         const recordView = document.getElementById('recordView');
+        const pdfView = document.getElementById('pdfView');
         const audioInput = document.getElementById('audioInput');
+        const pdfInput = document.getElementById('pdfInput');
         const browseBtn = document.getElementById('browseBtn');
+        const browsePdfBtn = document.getElementById('browsePdfBtn');
         const audioPreviewContainer = document.getElementById('audioPreviewContainer');
         const fileName = document.getElementById('fileName');
         const audioPreview = document.getElementById('audioPreview');
@@ -448,16 +480,30 @@
         tabUpload.addEventListener('click', () => {
             tabUpload.classList.add('active');
             tabRecord.classList.remove('active');
+            tabPdf.classList.remove('active');
             uploadView.classList.remove('hidden');
             recordView.classList.add('hidden');
+            pdfView.classList.add('hidden');
             resetState();
         });
 
         tabRecord.addEventListener('click', () => {
             tabRecord.classList.add('active');
             tabUpload.classList.remove('active');
+            tabPdf.classList.remove('active');
             recordView.classList.remove('hidden');
             uploadView.classList.add('hidden');
+            pdfView.classList.add('hidden');
+            resetState();
+        });
+
+        tabPdf.addEventListener('click', () => {
+            tabPdf.classList.add('active');
+            tabUpload.classList.remove('active');
+            tabRecord.classList.remove('active');
+            pdfView.classList.remove('hidden');
+            uploadView.classList.add('hidden');
+            recordView.classList.add('hidden');
             resetState();
         });
 
@@ -468,6 +514,17 @@
                 currentFile = e.target.files[0];
                 originalFileName = currentFile.name;
                 setupPreview(URL.createObjectURL(currentFile), originalFileName);
+                audioPreview.classList.remove('hidden');
+            }
+        });
+
+        browsePdfBtn.addEventListener('click', () => pdfInput.click());
+        pdfInput.addEventListener('change', (e) => {
+            if(e.target.files.length > 0) {
+                currentFile = e.target.files[0];
+                originalFileName = currentFile.name;
+                setupPreview("", originalFileName);
+                audioPreview.classList.add('hidden'); // Hide audio player for docs
             }
         });
 
@@ -519,7 +576,9 @@
         function resetState() {
             currentFile = null;
             audioInput.value = '';
+            pdfInput.value = '';
             audioPreviewContainer.classList.add('hidden');
+            document.getElementById('insightsPanel').classList.add('hidden');
             if(isRecording && mediaRecorder) {
                 mediaRecorder.stop();
                 isRecording = false;
@@ -553,9 +612,38 @@
             transcribeBtn.style.opacity = '1';
         }
 
-        function showSuccess(text) {
+        function showSuccess(data) {
             statusMessage.classList.add('hidden');
-            resultText.textContent = text;
+            
+            // Vibrant styles for liveliness!
+            const colors = [
+                "linear-gradient(135deg, #FF3366, #FF9933)", // Sunset
+                "linear-gradient(135deg, #00C9FF, #92FE9D)", // Aqua
+                "linear-gradient(135deg, #8E2DE2, #4A00E0)", // Deep Purple
+                "linear-gradient(135deg, #F09819, #EDDE5D)", // Golden
+                "linear-gradient(135deg, #FF512F, #DD2476)", // Ruby
+                "linear-gradient(135deg, #4776E6, #8E54E9)"  // Indigo
+            ];
+
+            // Inject Highlights
+            let text = data.originalText || "(No text identified)";
+            if (data.keywords && data.keywords.length > 0) {
+                data.keywords.forEach((kw, index) => {
+                    const regex = new RegExp(`\\b${kw}\\b`, 'gi');
+                    const color = colors[index % colors.length];
+                    text = text.replace(regex, `<span style="background:${color}; color:#fff; padding:2px 6px; border-radius:6px; font-weight:700; box-shadow: 0 4px 10px rgba(0,0,0,0.3); display: inline-block;">$&</span>`);
+                });
+            }
+            resultText.innerHTML = text;
+
+            // Render Insights
+            document.getElementById('summaryText').textContent = data.summary || "No summary constraints matched.";
+            document.getElementById('keywordsContainer').innerHTML = (data.keywords || []).map((k, index) => {
+                const color = colors[index % colors.length];
+                return `<span style="background:${color}; padding:6px 14px; border-radius:20px; font-size:0.9rem; font-weight: 700; color: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.4); text-transform: capitalize; border: 1px solid rgba(255,255,255,0.2);">#${k}</span>`;
+            }).join('');
+            
+            document.getElementById('insightsPanel').classList.remove('hidden');
             transcriptionResult.classList.remove('hidden');
             transcribeBtn.disabled = false;
             transcribeBtn.style.opacity = '1';
@@ -575,27 +663,33 @@
             showLoading();
 
             const formData = new FormData();
-            formData.append("audio_file", currentFile, originalFileName);
+            formData.append("file", currentFile, originalFileName);
 
             try {
-                const response = await fetch("http://localhost:8000/transcribe", {
+                const response = await fetch("/analyze-file", {
                     method: "POST",
                     body: formData
                 });
 
                 if(!response.ok) {
                     const err = await response.json().catch(()=>({}));
-                    throw new Error(err.detail || "Transcription API failed! Status code: " + response.status);
+                    throw new Error(err.detail || "API Pipeline failed! Status code: " + response.status);
                 }
 
                 const data = await response.json();
-                const transText = data.text || "(No text identified in audio)";
-                showSuccess(transText);
+                
+                if (data.error) {
+                     showError(data.error);
+                     return;
+                }
+
+                showSuccess(data);
 
                 // FIREBASE DATABASE HOOK
                 if(window.firebaseAuth && window.firebaseAuth.currentUser) {
                     try {
-                        await window.saveTranscriptionHistory(originalFileName, transText);
+                        let textStr = data.originalText || "(No text)";
+                        await window.saveTranscriptionHistory(originalFileName, textStr);
                         statusMessage.innerHTML = 'Saved to history!';
                         statusMessage.className = 'status-message success';
                         statusMessage.classList.remove('hidden');
