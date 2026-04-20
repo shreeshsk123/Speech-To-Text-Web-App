@@ -42,9 +42,51 @@ body {
     padding-top: 80px;
 }
 
-/* Background animated orbs - Hidden for plain theme */
+/* Background animated orbs to make it lively */
 .background-orbs {
-    display: none;
+    position: fixed;
+    top: 0; left: 0; width: 100vw; height: 100vh;
+    overflow: hidden;
+    z-index: -1;
+    pointer-events: none;
+    background: radial-gradient(circle at 15% 50%, rgba(37, 99, 235, 0.08), transparent 25%),
+                radial-gradient(circle at 85% 30%, rgba(236, 72, 153, 0.08), transparent 25%);
+}
+
+.orb {
+    position: absolute;
+    border-radius: 50%;
+    filter: blur(90px);
+    opacity: 0.6;
+    animation: float 25s infinite ease-in-out alternate;
+}
+
+.orb-1 {
+    width: 500px; height: 500px;
+    background: #6366f1; /* Deep Indigo */
+    top: -100px; left: -100px;
+    animation-delay: 0s;
+}
+
+.orb-2 {
+    width: 400px; height: 400px;
+    background: #ec4899; /* Vibrant Pink */
+    bottom: -150px; right: -50px;
+    animation-delay: -5s;
+}
+
+.orb-3 {
+    width: 600px; height: 600px;
+    background: #0ea5e9; /* Sky Blue */
+    top: 30%; left: 50%;
+    animation-delay: -10s;
+}
+
+@keyframes float {
+    0% { transform: translate(0, 0) scale(1); }
+    33% { transform: translate(80px, -50px) scale(1.1); }
+    66% { transform: translate(-40px, 80px) scale(0.9); }
+    100% { transform: translate(50px, 50px) scale(1); }
 }
 
 /* Auth NavBar */
