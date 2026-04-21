@@ -1,145 +1,145 @@
-# 🎤 Speech-To-Text Web App
+# 🎤📄 Speech & Document To Text Web App
 
-A simple and efficient web application that converts speech (audio) into text using Python and modern web technologies.
+A modern web application that converts **audio (speech)** and **PDF documents** into readable text using **AI-powered transcription and extraction techniques**.
 
 ---
 
-## 🚀 Features
+## 🚀 Overview
 
-* 🎙️ Convert speech/audio to text
-* 📁 Upload audio files
-* ⚡ Fast and accurate transcription
-* 🌐 Simple and clean UI
-* 🧠 Uses Python-based speech recognition
+This application allows users to upload audio and PDF files and convert them into text using advanced AI models and backend processing.
+
+---
+
+## ✨ Features
+
+* 🎙️ Convert speech/audio to text using OpenAI Whisper
+* 📄 Extract text from PDF documents
+* 📁 Upload audio and PDF files
+* ⚡ Fast and accurate processing
+* 🌐 Simple and clean user interface
+
+---
+
+## 🧠 AI Model
+
+* OpenAI Whisper (for speech-to-text)
 
 ---
 
 ## 🛠️ Tech Stack
 
-* **Frontend:** HTML, CSS, JavaScript
-* **Backend:** Python (Flask / your framework)
-* **Libraries:** SpeechRecognition, pydub (if used)
-* **Tools:** FFmpeg
+### Frontend
+
+* HTML
+* CSS
+* JavaScript
+
+### Backend
+
+* Python (Flask)
+
+### Libraries & Tools
+
+* Whisper
+* PyDub
+* FFmpeg
+* PyPDF / pdfplumber
 
 ---
 
 ## 📂 Project Structure
 
 ```
-Speech-To-Text-Web-App/
-│── static/
-│── templates/
-│── main.py
-│── requirements.txt
-│── README.md
+Speech-Document-To-Text-App/
+│
+├── static/            # CSS, JS, assets
+├── templates/         # HTML files
+├── uploads/           # Uploaded files
+├── main.py            # Backend logic
+├── requirements.txt   # Dependencies
+└── README.md
 ```
 
 ---
 
 ## ⚙️ Installation & Setup
 
-### 1️⃣ Clone the Repository
+1. Clone the repository:
 
 ```
-git clone https://github.com/shreeshsk123/Speech-To-Text-Web-App.git
-cd Speech-To-Text-Web-App
+git clone https://github.com/your-username/your-repo-name.git
+cd your-repo-name
 ```
 
----
-
-### 2️⃣ Install Python
-
-Make sure Python 3.x is installed
-Download: https://www.python.org/downloads/
-
-✔ أثناء installation, tick **"Add Python to PATH"**
-
----
-
-### 3️⃣ Install Dependencies
+2. Install dependencies:
 
 ```
 pip install -r requirements.txt
 ```
 
----
+3. Install FFmpeg and add it to system PATH.
 
-### 4️⃣ Install FFmpeg (IMPORTANT ⚠️)
-
-This project requires FFmpeg for audio processing.
-
-#### Steps:
-
-1. Download FFmpeg: https://ffmpeg.org/download.html
-2. Extract the ZIP file
-3. Move folder to:
-
-```
-C:\ffmpeg
-```
-
-4. Add this path to Environment Variables:
-
-```
-C:\ffmpeg\bin
-```
-
----
-
-### 5️⃣ Verify FFmpeg Installation
-
-```
-ffmpeg -version
-```
-
-✔ If it shows version → Setup is correct
-
----
-
-## ▶️ Running the Application
+4. Run the application:
 
 ```
 python main.py
 ```
 
-Then open your browser:
+5. Open in browser:
 
 ```
-http://127.0.0.1:5000/
+http://127.0.0.1:5000
 ```
 
 ---
 
-## 👨‍💻 Usage
+## 🔄 How It Works
 
-1. Upload an audio file 🎵
-2. Click on convert
-3. Get text output instantly ✨
+### Audio to Text
 
----
+* Upload audio file
+* Audio is processed using FFmpeg
+* Whisper model generates transcription
+* Text is displayed on the UI
 
-## ⚠️ Important Notes
+### PDF to Text
 
-* ❌ Do NOT include large files like `ffmpeg.exe` in the repository
-* ✅ Install FFmpeg separately
-* ⚠️ Ensure microphone/audio permissions (if using live input)
-
----
-
-## 🤝 Contributing
-
-Contributions are welcome!
-Feel free to fork this repo and submit a pull request.
+* Upload PDF file
+* Text is extracted using PDF parser
+* Extracted content is displayed
 
 ---
 
-## 📧 Contact
+## 📌 Use Cases
 
-**Author:** Shreesh Khamkar
-GitHub: https://github.com/shreeshsk123
+* Lecture transcription
+* Meeting notes
+* Document digitization
+* Accessibility tools
 
 ---
 
-## ⭐ If you like this project
+## 📈 Future Improvements
 
-Give it a ⭐ on GitHub!
+* Multi-language support
+* Real-time speech input
+* File export (TXT, DOCX)
+* Cloud deployment
+
+---
+
+## 🤝 Contribution
+
+Feel free to fork this repository and submit pull requests.
+
+---
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+---
+
+## 👨‍💻 Author
+
+Shreesh Khamkar
